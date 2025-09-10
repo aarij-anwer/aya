@@ -5,19 +5,21 @@ import { Hero } from '@/components/Hero';
 import Pricing from '@/components/Pricing';
 import Team from '@/components/Team';
 import { Testimonials } from '@/components/Testimonials';
+import TwoColumnCards from '@/components/TwoColumnCards';
 
 export default function Home() {
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <main>
-        <Hero />
-        <CallToAction />
-        <Team />
-        <Pricing />
+        {/* <Hero /> */}
+        {/* <CallToAction /> */}
+        {/* <Team /> */}
+        {/* <Pricing /> */}
         {/* <Testimonials /> */}
+        <TwoColumnCards />
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
