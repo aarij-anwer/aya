@@ -5,7 +5,7 @@ import { Hero } from '@/components/Hero';
 import Pricing from '@/components/Pricing';
 import Team from '@/components/Team';
 import { Testimonials } from '@/components/Testimonials';
-import TwoColumnCards from '@/components/TwoColumnCards';
+import TwoColumnCards from '@/components/Form/TwoColumnCards';
 
 export default function Home() {
   return (

@@ -1,13 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid';
-import { ChevronDownIcon } from '@heroicons/react/16/solid';
+import { UserCircleIcon } from '@heroicons/react/24/solid';
+import FileDrop from './FileDrop';
+import SectionCard from './SectionCard';
+import TextArea from './TextArea';
+import TextInput from './TextInput';
+import Field from './Field';
+import Select from './Select';
+import Checkbox from './Checkbox';
+import Radio from './Radio';
 
 // ----------------------------
 // Types
 // ----------------------------
-type SectionProps = {
+export type SectionProps = {
   title: string;
   description?: string;
   children: React.ReactNode;
@@ -16,95 +23,6 @@ type SectionProps = {
   open?: boolean;
   onToggle?: () => void;
 };
-
-// ----------------------------
-// Header + Card
-// ----------------------------
-function SectionHeader({
-  title,
-  description,
-  open,
-  onToggle,
-}: {
-  title: string;
-  description?: string;
-  open: boolean;
-  onToggle: () => void;
-}) {
-  const slug = title.replace(/\s+/g, '-').toLowerCase();
-  return (
-    <div className="px-4 sm:px-0">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="group flex w-full items-start gap-3 text-left"
-        aria-expanded={open}
-        aria-controls={`${slug}-panel`}
-      >
-        <ChevronDownIcon
-          aria-hidden="true"
-          className={`size-5 shrink-0 translate-y-1 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-        />
-        <div>
-          <h2 className="text-base/7 font-semibold text-gray-900">{title}</h2>
-          {description ? (
-            <p className="mt-1 text-sm/6 text-gray-600">{description}</p>
-          ) : null}
-        </div>
-      </button>
-    </div>
-  );
-}
-
-function SectionCard({
-  title,
-  description,
-  children,
-  as = 'form',
-  onSubmit,
-  open = true,
-  onToggle,
-}: SectionProps) {
-  const As = (as ?? 'form') as React.ElementType;
-  const slug = title.replace(/\s+/g, '-').toLowerCase();
-
-  return (
-    <div className="grid grid-cols-1 gap-x-8 gap-y-4 py-6 md:grid-cols-3">
-      <SectionHeader
-        title={title}
-        description={description}
-        open={open}
-        onToggle={onToggle ?? (() => {})}
-      />
-
-      <As
-        id={`${slug}-panel`}
-        onSubmit={as === 'form' ? onSubmit : undefined}
-        className={`bg-white shadow-xs outline outline-gray-900/5 transition-all duration-200 sm:rounded-xl md:col-span-2 ${open ? 'opacity-100' : 'opacity-95'}`}
-      >
-        <div className="px-4 py-6 sm:p-8">{children}</div>
-
-        <div
-          className={`${open ? 'flex' : 'hidden'} items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8`}
-        >
-          <button
-            type="button"
-            onClick={onToggle}
-            className="text-sm/6 font-semibold text-gray-900"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Save
-          </button>
-        </div>
-      </As>
-    </div>
-  );
-}
 
 // ----------------------------
 // PreviewClamp: show only first N items when closed
@@ -144,199 +62,6 @@ function PreviewClamp({
         );
       })}
     </>
-  );
-}
-// ----------------------------
-// Field primitives
-// ----------------------------
-type FieldProps = {
-  id: string;
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-};
-
-function Field({ id, label, hint, children }: FieldProps) {
-  return (
-    <div className="col-span-full">
-      <label htmlFor={id} className="block text-sm/6 font-medium text-gray-900">
-        {label}
-      </label>
-      <div className="mt-2">{children}</div>
-      {hint ? <p className="mt-3 text-sm/6 text-gray-600">{hint}</p> : null}
-    </div>
-  );
-}
-
-function TextInput({
-  id,
-  type = 'text',
-  autoComplete,
-  placeholder,
-}: {
-  id: string;
-  type?: string;
-  autoComplete?: string;
-  placeholder?: string;
-}) {
-  return (
-    <input
-      id={id}
-      name={id}
-      type={type}
-      autoComplete={autoComplete}
-      placeholder={placeholder}
-      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-    />
-  );
-}
-
-function TextArea({ id, rows = 3 }: { id: string; rows?: number }) {
-  return (
-    <textarea
-      id={id}
-      name={id}
-      rows={rows}
-      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-      defaultValue={''}
-    />
-  );
-}
-
-function Select({ id, options }: { id: string; options: string[] }) {
-  return (
-    <div className="grid grid-cols-1">
-      <select
-        id={id}
-        name={id}
-        className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-      >
-        {options.map((o) => (
-          <option key={o}>{o}</option>
-        ))}
-      </select>
-      <ChevronDownIcon
-        aria-hidden="true"
-        className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-      />
-    </div>
-  );
-}
-
-function Checkbox({
-  id,
-  defaultChecked,
-  label,
-  description,
-}: {
-  id: string;
-  defaultChecked?: boolean;
-  label: string;
-  description?: string;
-}) {
-  return (
-    <div className="flex gap-3">
-      <div className="flex h-6 shrink-0 items-center">
-        <div className="group grid size-4 grid-cols-1">
-          <input
-            defaultChecked={defaultChecked}
-            id={id}
-            name={id}
-            type="checkbox"
-            aria-describedby={`${id}-description`}
-            className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-          />
-          <svg
-            fill="none"
-            viewBox="0 0 14 14"
-            className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
-          >
-            <path
-              d="M3 8L6 11L11 3.5"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="opacity-0 group-has-checked:opacity-100"
-            />
-            <path
-              d="M3 7H11"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="opacity-0 group-has-indeterminate:opacity-100"
-            />
-          </svg>
-        </div>
-      </div>
-      <div className="text-sm/6">
-        <label htmlFor={id} className="font-medium text-gray-900">
-          {label}
-        </label>
-        {description ? (
-          <p id={`${id}-description`} className="text-gray-500">
-            {description}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function Radio({
-  id,
-  name,
-  label,
-}: {
-  id: string;
-  name: string;
-  label: string;
-}) {
-  return (
-    <div className="flex items-center gap-x-3">
-      <input
-        id={id}
-        name={name}
-        type="radio"
-        className="relative size-4 appearance-none rounded-full border border-gray-300 bg-white before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 forced-colors:appearance-auto forced-colors:before:hidden"
-      />
-      <label htmlFor={id} className="block text-sm/6 font-medium text-gray-900">
-        {label}
-      </label>
-    </div>
-  );
-}
-
-function FileDrop({
-  id,
-  iconLabel,
-  helpText,
-}: {
-  id: string;
-  iconLabel?: string;
-  helpText?: string;
-}) {
-  return (
-    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-      <div className="text-center">
-        <PhotoIcon
-          aria-hidden="true"
-          className="mx-auto size-12 text-gray-300"
-        />
-        <div className="mt-4 flex text-sm/6 text-gray-600">
-          <label
-            htmlFor={id}
-            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-indigo-600 hover:text-indigo-500"
-          >
-            <span>{iconLabel ?? 'Upload a file'}</span>
-            <input id={id} name={id} type="file" className="sr-only" />
-          </label>
-          <p className="pl-1">or drag and drop</p>
-        </div>
-        <p className="text-xs/5 text-gray-600">
-          {helpText ?? 'PNG, JPG, GIF up to 10MB'}
-        </p>
-      </div>
-    </div>
   );
 }
 
