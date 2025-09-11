@@ -6,6 +6,7 @@ type Props = {
   defaultChecked?: boolean;
   label: string;
   description?: string;
+  clickHandler?: () => void;
 };
 
 export default function Checkbox({
@@ -13,6 +14,7 @@ export default function Checkbox({
   defaultChecked,
   label,
   description,
+  clickHandler,
 }: Props) {
   return (
     <div className="flex gap-3">
@@ -25,6 +27,7 @@ export default function Checkbox({
             type="checkbox"
             aria-describedby={`${id}-description`}
             className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+            onClick={clickHandler}
           />
           <svg
             fill="none"
