@@ -9,6 +9,8 @@ import Field from './Field';
 import Select from './Select';
 import Checkbox from './Checkbox';
 import Radio from './Radio';
+import PreviewClamp from './PreviewClamp';
+import { useAccordion } from '@/hooks/useAccordion';
 
 // ----------------------------
 // Types
@@ -24,64 +26,9 @@ export type SectionProps = {
 };
 
 // ----------------------------
-// PreviewClamp: show only first N items when closed
-// ----------------------------
-function PreviewClamp({
-  open,
-  previewCount = 1,
-  children,
-}: {
-  open: boolean;
-  previewCount?: number;
-  children: React.ReactNode;
-}) {
-  const items = React.Children.toArray(children);
-
-  // When open, render everything exactly as-is (keeps grid col-spans intact).
-  if (open) return <>{items}</>;
-
-  // When closed, render only the first N direct children.
-  // Everything after N is wrapped in a hidden div so we don't mutate child props.
-  return (
-    <>
-      {items.map((child, i) => {
-        // Use the child's existing key if present; otherwise fall back to index.
-        const rawKey =
-          React.isValidElement(child) && child.key != null ? child.key : i;
-        const key = typeof rawKey === 'string' ? rawKey : String(rawKey);
-
-        if (i < previewCount) {
-          return <React.Fragment key={key}>{child}</React.Fragment>;
-        }
-
-        return (
-          <div key={key} className="hidden" aria-hidden>
-            {child}
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
-// ----------------------------
-// Accordion state helpers
-// ----------------------------
-type SectionState = { open: boolean };
-function useAccordion(
-  initial = true
-): [SectionState, (next?: boolean) => void] {
-  const [open, setOpen] = useState<boolean>(initial);
-  return [
-    { open },
-    (next) => setOpen((prev) => (typeof next === 'boolean' ? next : !prev)),
-  ];
-}
-
-// ----------------------------
 // Page
 // ----------------------------
-export default function TwoColumnCards() {
+export default function Form() {
   // Section toggles
   const [appIdent, toggleAppIdent] = useAccordion(true);
   const [appEmp, toggleAppEmp] = useAccordion(true);
@@ -114,7 +61,7 @@ export default function TwoColumnCards() {
         description="Core details about you and where we can reach you."
         open={appIdent.open}
         onToggle={() => toggleAppIdent()}
-        onSubmit={makeOnSubmit(toggleAppIdent)}
+        onSaveClick={() => toggleAppIdent()}
       >
         <div className="grid max-w-3xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <PreviewClamp open={appIdent.open} previewCount={2}>
@@ -255,7 +202,7 @@ export default function TwoColumnCards() {
         description="Your current job and income details."
         open={appEmp.open}
         onToggle={() => toggleAppEmp()}
-        onSubmit={makeOnSubmit(toggleAppEmp)}
+        // onSubmit={makeOnSubmit(toggleAppEmp)}
       >
         <div className="grid max-w-3xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <PreviewClamp open={appEmp.open} previewCount={1}>
@@ -342,7 +289,6 @@ export default function TwoColumnCards() {
         description="Contact who does not live with you."
         open={refSec.open}
         onToggle={() => toggleRefSec()}
-        onSubmit={makeOnSubmit(toggleRefSec)}
       >
         <div className="grid max-w-3xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <PreviewClamp open={refSec.open} previewCount={1}>
@@ -413,7 +359,6 @@ export default function TwoColumnCards() {
           description="Details for the co-applicant or guarantor."
           open={coAppIdent.open}
           onToggle={() => toggleCoAppIdent()}
-          onSubmit={makeOnSubmit(toggleCoAppIdent)}
         >
           <div className="grid max-w-3xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             <PreviewClamp open={coAppIdent.open} previewCount={2}>
@@ -533,7 +478,6 @@ export default function TwoColumnCards() {
           description="Co-applicant job and income details."
           open={coAppEmp.open}
           onToggle={() => toggleCoAppEmp()}
-          onSubmit={makeOnSubmit(toggleCoAppEmp)}
         >
           <div className="grid max-w-3xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             <PreviewClamp open={coAppEmp.open} previewCount={2}>
@@ -621,7 +565,6 @@ export default function TwoColumnCards() {
         description="What you own — balances and values."
         open={assets.open}
         onToggle={() => toggleAssets()}
-        onSubmit={makeOnSubmit(toggleAssets)}
       >
         <div className="grid max-w-4xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <PreviewClamp open={assets.open} previewCount={2}>
@@ -709,7 +652,7 @@ export default function TwoColumnCards() {
         description="What you owe — balances and monthly payments."
         open={liabs.open}
         onToggle={() => toggleLiabs()}
-        onSubmit={makeOnSubmit(toggleLiabs)}
+        // onSubmit={makeOnSubmit(toggleLiabs)}
       >
         <div className="grid max-w-4xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <PreviewClamp open={liabs.open} previewCount={2}>
@@ -794,7 +737,6 @@ export default function TwoColumnCards() {
         description="Calculated values (to be wired later)."
         open={networth.open}
         onToggle={() => toggleNetworth()}
-        onSubmit={makeOnSubmit(toggleNetworth)}
       >
         <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <PreviewClamp open={networth.open} previewCount={1}>
@@ -835,7 +777,6 @@ export default function TwoColumnCards() {
         description="Answer truthfully — this affects eligibility."
         open={decls.open}
         onToggle={() => toggleDecls()}
-        onSubmit={makeOnSubmit(toggleDecls)}
       >
         <div className="max-w-2xl space-y-10 md:col-span-2">
           <PreviewClamp open={decls.open} previewCount={1}>
@@ -846,12 +787,10 @@ export default function TwoColumnCards() {
               <div className="mt-6 space-y-6">
                 <Radio
                   id="app-bankruptcy-no"
-                  name="app-bankruptcy"
                   label="No bankruptcy / court judgment"
                 />
                 <Radio
                   id="app-bankruptcy-yes"
-                  name="app-bankruptcy"
                   label="Yes — specify year below"
                 />
                 <div className="mt-2">
@@ -872,12 +811,10 @@ export default function TwoColumnCards() {
                 <div className="mt-6 space-y-6">
                   <Radio
                     id="co-bankruptcy-no"
-                    name="co-bankruptcy"
                     label="No bankruptcy / court judgment"
                   />
                   <Radio
                     id="co-bankruptcy-yes"
-                    name="co-bankruptcy"
                     label="Yes — specify year below"
                   />
                   <div className="mt-2">
@@ -900,7 +837,6 @@ export default function TwoColumnCards() {
         description="Authorization and consent to verify information."
         open={consent.open}
         onToggle={() => toggleConsent()}
-        onSubmit={makeOnSubmit(toggleConsent)}
       >
         <div className="grid max-w-3xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <PreviewClamp open={consent.open} previewCount={1}>

@@ -1,11 +1,4 @@
-import { CallToAction } from '@/components/CallToAction';
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
-import { Hero } from '@/components/Hero';
-import Pricing from '@/components/Pricing';
-import Team from '@/components/Team';
-import { Testimonials } from '@/components/Testimonials';
-import TwoColumnCards from '@/components/Form/TwoColumnCards';
+import MortgageForm from '@/components/Form/MortgageForm';
 
 export default function Home() {
   return (
@@ -17,7 +10,8 @@ export default function Home() {
         {/* <Team /> */}
         {/* <Pricing /> */}
         {/* <Testimonials /> */}
-        <TwoColumnCards />
+        {/* <MortgageApplicationForm /> */}
+        <MortgageForm />
       </main>
       {/* <Footer /> */}
     </>
