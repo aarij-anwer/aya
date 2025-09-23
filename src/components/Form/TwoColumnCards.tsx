@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import FileDrop from './FileDrop';
 import SectionCard from './SectionCard';
-import TextArea from './TextArea';
 import TextInput from './TextInput';
 import Field from './Field';
 import Select from './Select';
@@ -396,13 +395,13 @@ export default function TwoColumnCards() {
           label="Add co-applicant / guarantor"
           description="Include co-applicant sections below"
           defaultChecked={hasCoApplicant}
-          clickHandler={() => setHasCoApplicant((v) => !v)}
+          onClick={() => setHasCoApplicant((v) => !v)}
         />
         {hasCoApplicant && (
           <Checkbox
             id="has-coapp-address"
             label="Same address?"
-            clickHandler={() => setCoapplicantAddress((v) => !v)}
+            onClick={() => setCoapplicantAddress((v) => !v)}
           />
         )}
       </div>

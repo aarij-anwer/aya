@@ -15,7 +15,11 @@ export default function Field({ id, label, hint, children }: FieldProps) {
         {label}
       </label>
       <div className="mt-2">{children}</div>
-      {hint ? <p className="mt-3 text-sm/6 text-gray-600">{hint}</p> : null}
+      {hint ? (
+        <p id={`${id}-hint`} className="mt-3 text-sm/6 text-gray-600">
+          {hint}
+        </p>
+      ) : null}
     </div>
   );
 }

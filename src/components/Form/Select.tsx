@@ -1,29 +1,32 @@
 'use client';
-import React from 'react';
-import { ChevronDownIcon } from '@heroicons/react/16/solid';
+import React, { forwardRef } from 'react';
 
-export default function Select({
-  id,
-  options,
-}: {
+type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   id: string;
   options: string[];
-}) {
+};
+
+const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+  { id, options, ...rest },
+  ref
+) {
   return (
     <div className="grid grid-cols-1">
       <select
+        ref={ref} // ✅ react-hook-form compatibility
         id={id}
         name={id}
         className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+        {...rest} // ✅ value, onChange, defaultValue, etc.
       >
         {options.map((o) => (
-          <option key={o}>{o}</option>
+          <option key={o} value={o}>
+            {o}
+          </option>
         ))}
       </select>
-      <ChevronDownIcon
-        aria-hidden="true"
-        className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-      />
     </div>
   );
-}
+});
+
+export default Select;

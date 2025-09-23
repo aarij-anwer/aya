@@ -1,33 +1,51 @@
 'use client';
-import React from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 
-type Props = {
+type CheckboxProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'id' | 'name'
+> & {
   id: string;
-  defaultChecked?: boolean;
   label: string;
   description?: string;
-  clickHandler?: () => void;
+  defaultChecked?: boolean; // kept explicit for clarity
+  indeterminate?: boolean; // optional: "—" visual state
 };
 
-export default function Checkbox({
-  id,
-  defaultChecked,
-  label,
-  description,
-  clickHandler,
-}: Props) {
+const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
+  { id, label, description, defaultChecked, indeterminate, ...rest },
+  ref
+) {
+  const localRef = useRef<HTMLInputElement>(null);
+
+  // merge forwarded ref + local ref
+  const setRef = (node: HTMLInputElement | null) => {
+    localRef.current = node;
+    if (typeof ref === 'function') ref(node);
+    else if (ref)
+      (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
+  };
+
+  // keep indeterminate state in sync
+  useEffect(() => {
+    if (localRef.current) {
+      localRef.current.indeterminate = !!indeterminate;
+    }
+  }, [indeterminate]);
+
   return (
     <div className="flex gap-3">
       <div className="flex h-6 shrink-0 items-center">
         <div className="group grid size-4 grid-cols-1">
           <input
-            defaultChecked={defaultChecked}
+            ref={setRef} // ✅ react-hook-form compatibility
             id={id}
             name={id}
             type="checkbox"
-            aria-describedby={`${id}-description`}
+            defaultChecked={defaultChecked}
+            aria-describedby={description ? `${id}-description` : undefined}
             className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-            onClick={clickHandler}
+            {...rest} // ✅ onChange, checked, disabled, etc.
           />
           <svg
             fill="none"
@@ -63,4 +81,6 @@ export default function Checkbox({
       </div>
     </div>
   );
-}
+});
+
+export default Checkbox;
