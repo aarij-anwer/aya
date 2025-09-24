@@ -3,6 +3,140 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
+import { faker } from '@faker-js/faker';
+
+function makeFixture() {
+  const first = faker.person.firstName();
+  const last = faker.person.lastName();
+  const coFirst = faker.person.firstName();
+  const coLast = faker.person.lastName();
+  const street = `${faker.location.streetAddress()}`;
+  const city = faker.location.city();
+  const prov = 'ON';
+  const postal = 'M5V 2T6';
+
+  return {
+    // Applicant — Identity & Contact
+    'app-first': first,
+    'app-last': last,
+    'app-dob': '1990-01-15',
+    'app-sin': '123-456-789',
+    'app-status': 'Citizen',
+    'app-email': faker.internet.email({ firstName: first, lastName: last }),
+    'app-phone': '416-555-0133',
+    'app-street': street,
+    'app-city': city,
+    'app-province': prov,
+    'app-postal': postal,
+    'app-occupancy': 'Rent',
+    'app-housing-payment': 2400,
+    'app-tenure': 2,
+    'app-prev-street': '',
+    'app-prev-city': '',
+    'app-prev-province': '',
+    'app-prev-postal': '',
+
+    // Applicant — Employment
+    'emp-employer': 'Acme Corp',
+    'emp-position': 'Software Engineer',
+    'emp-paytype': 'Salary',
+    'emp-income': 145000,
+    'emp-tenure': 3,
+    'emp-street': '123 King St W',
+    'emp-city': 'Toronto',
+    'emp-province': 'ON',
+    'emp-postal': 'M5H 1A1',
+    'emp-prev-employer': 'Globex',
+    'emp-prev-position': 'Developer',
+    'emp-prev-tenure': 1,
+
+    // Personal Reference
+    'ref-name': 'Jamie Rivera',
+    'ref-relationship': 'Friend',
+    'ref-phone': '647-555-0199',
+    'ref-email': 'jamie@example.com',
+    'ref-street': '55 Queen St E',
+    'ref-city': 'Toronto',
+    'ref-province': 'ON',
+    'ref-postal': 'M5C 1R6',
+
+    // Co-Applicant — Identity & Employment
+    'co-first': coFirst,
+    'co-last': coLast,
+    'co-dob': '1991-06-20',
+    'co-sin': '987-654-321',
+    'co-status': 'Permanent Resident',
+    'co-email': faker.internet.email({ firstName: coFirst, lastName: coLast }),
+    'co-phone': '289-555-0100',
+    'co-street': '10 Dundas St E',
+    'co-city': 'Toronto',
+    'co-province': 'ON',
+    'co-postal': 'M5B 2G9',
+    'co-occupancy': 'Rent',
+    'co-housing-payment': 0,
+    'co-tenure': 2,
+    'co-prev-street': '',
+    'co-prev-city': '',
+    'co-prev-province': '',
+    'co-prev-postal': '',
+
+    'co-emp-employer': 'Initech',
+    'co-emp-position': 'Analyst',
+    'co-emp-paytype': 'Salary',
+    'co-emp-income': 98000,
+    'co-emp-tenure': 2,
+    'co-emp-street': '200 Bay St',
+    'co-emp-city': 'Toronto',
+    'co-emp-province': 'ON',
+    'co-emp-postal': 'M5J 2J5',
+    'co-emp-prev-employer': '',
+    'co-emp-prev-position': '',
+    'co-emp-prev-tenure': 0,
+
+    // Assets
+    'asset-bank-name-1': 'RBC Chequing',
+    'asset-bank-balance-1': 12000,
+    'asset-invest-type-1': 'TFSA',
+    'asset-invest-amount-1': 25000,
+    'asset-re-type-1': 'Condo',
+    'asset-re-value-1': 650000,
+    'asset-vehicle-status-1': 'Owned',
+    'asset-vehicle-value-1': 18000,
+    'asset-other-desc-1': 'Jewelry',
+    'asset-other-value-1': 3000,
+
+    // Liabilities
+    'debt-cc-desc-1': 'TD Visa',
+    'debt-cc-balance-1': 2400,
+    'debt-cc-pay-1': 75,
+    'debt-loan-desc-1': 'RBC LOC',
+    'debt-loan-balance-1': 8000,
+    'debt-loan-pay-1': 200,
+    'debt-mortgage-desc-1': 'Primary residence',
+    'debt-mortgage-balance-1': 420000,
+    'debt-mortgage-pay-1': 2200,
+    'debt-other-desc-1': '',
+    'debt-other-balance-1': 0,
+
+    // Totals (placeholder)
+    'nw-assets': 0,
+    'nw-liabs': 0,
+    'nw-net': 0,
+
+    // Declarations
+    'app-bankruptcy': 'no',
+    'app-bankruptcy-year': '',
+    'co-bankruptcy': 'no',
+    'co-bankruptcy-year': '',
+
+    // Consent (only essentials; server compacts anyway)
+    'sign-app-name': `${first} ${last}`,
+    'sign-app-date': '2025-09-24',
+    'sign-co-name': `${coFirst} ${coLast}`,
+    'sign-co-date': '2025-09-24',
+  };
+}
+
 type FormValues = Record<string, any>;
 
 export default function BasicMortgageForm() {
@@ -24,6 +158,9 @@ export default function BasicMortgageForm() {
     reset();
     console.log('Form cleared.');
   };
+
+  const fillDemo = () => reset(makeFixture());
+  const clearAll = () => reset({});
 
   const input =
     'mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900';
@@ -1306,7 +1443,17 @@ I/We further acknowledge and agree that each potential mortgage financier, mortg
         <div className="flex items-center justify-end gap-3 pt-2">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={fillDemo}
+            className="rounded border px-3 py-2 text-sm"
+          >
+            Fill with sample data
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onCancel();
+              clearAll();
+            }}
             className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700/40"
           >
             Cancel
