@@ -4,6 +4,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 
 import { faker } from '@faker-js/faker';
+import { useRouter } from 'next/navigation';
 
 function makeFixture() {
   const first = faker.person.firstName();
@@ -141,6 +142,7 @@ type FormValues = Record<string, any>;
 
 export default function BasicMortgageForm() {
   const { register, handleSubmit, reset, getValues } = useForm<FormValues>();
+  const router = useRouter();
 
   const onSubmit = async () => {
     const values = getValues(); // RHF snapshot
@@ -152,6 +154,9 @@ export default function BasicMortgageForm() {
     });
     const json = await res.json();
     console.log('Saved:', json);
+    const { id } = json;
+
+    router.push(`/applications/${id}`);
   };
 
   const onCancel = () => {
