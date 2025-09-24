@@ -1,6 +1,8 @@
-// app/app/[id]/page.tsx
+// app/applications/[id]/page.tsx  (or app/app/[id]/page.tsx)
 import Link from 'next/link';
 import { headers } from 'next/headers';
+
+type SearchParams = Record<string, string | string[] | undefined>;
 
 type ApiOk = {
   id: string;
@@ -12,7 +14,6 @@ type ApiErr = { error: string; detail?: string };
 type ApiResponse = ApiOk | ApiErr;
 
 async function getBaseUrl() {
-  // 👇 await headers() (your TS error was from missing this)
   const h = await headers();
   const proto =
     h.get('x-forwarded-proto') ??
@@ -23,18 +24,16 @@ async function getBaseUrl() {
   const host =
     h.get('x-forwarded-host') ??
     h.get('host') ??
-    process.env.NEXT_PUBLIC_VERCEL_URL /* e.g. myapp.vercel.app */ ??
+    process.env.NEXT_PUBLIC_VERCEL_URL ??
     'localhost:3000';
-
-  // Prefer explicit site URL if set
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? `${proto}://${host}`;
-  return base;
+  return process.env.NEXT_PUBLIC_SITE_URL ?? `${proto}://${host}`;
 }
 
 async function getApplication(id: string) {
   const base = await getBaseUrl();
-  const url = new URL(`/api/applications/${id}`, base);
-  const res = await fetch(url.toString(), { cache: 'no-store' });
+  const res = await fetch(new URL(`/api/applications/${id}`, base), {
+    cache: 'no-store',
+  });
   return {
     ok: res.ok,
     status: res.status,
@@ -44,10 +43,26 @@ async function getApplication(id: string) {
 
 export default async function ApplicationDetailPage({
   params,
+  searchParams,
 }: {
-  params: { id: string };
+  // 👇 Promise types match Next’s async props
+  params: Promise<{ id: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
-  const { id } = params;
+  const { id: routeId } = await params;
+  const sp = await searchParams;
+
+  // Prefer dynamic route param (/app/[id]); fall back to ?id=...
+  const id = routeId ?? (Array.isArray(sp.id) ? sp.id[0] : sp.id);
+
+  if (!id) {
+    return (
+      <main className="mx-auto max-w-3xl p-6">
+        <h1 className="text-xl font-semibold">Missing id</h1>
+      </main>
+    );
+  }
+
   const { ok, status, data } = await getApplication(id);
 
   if (!ok) {
@@ -61,7 +76,7 @@ export default async function ApplicationDetailPage({
           <p className="mt-2 text-sm text-red-600">{data.error}</p>
         )}
         <div className="mt-6">
-          <Link href="/app" className="text-blue-600 underline">
+          <Link href="/" className="text-blue-600 underline">
             Back
           </Link>
         </div>
@@ -77,26 +92,22 @@ export default async function ApplicationDetailPage({
 
       <div className="mt-6 space-y-3 rounded-lg border p-4">
         <div className="flex justify-between">
-          <span className="gap-4 text-sm text-gray-500">
-            ID (last 4 digits)
-          </span>
-          <span className="font-mono">
-            {app.id.substring(app.id.length - 4)}
-          </span>
+          <span className="text-sm text-gray-500">ID (last 4)</span>
+          <span className="font-mono">{app.id.slice(-4)}</span>
         </div>
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between">
           <span className="text-sm text-gray-500">Status</span>
           <span>
-            {app.status &&
-              app.status?.charAt(0).toUpperCase() +
-                app.status?.substring(1).toLowerCase()}
+            {app.status
+              ? app.status[0].toUpperCase() + app.status.slice(1).toLowerCase()
+              : '—'}
           </span>
         </div>
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between">
           <span className="text-sm text-gray-500">Applicant</span>
           <span>{app.applicant_name ?? '—'}</span>
         </div>
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between">
           <span className="text-sm text-gray-500">Co-Applicant</span>
           <span>{app.coapplicant_name ?? '—'}</span>
         </div>

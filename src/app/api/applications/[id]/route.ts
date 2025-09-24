@@ -1,4 +1,5 @@
 // app/api/applications/[id]/route.ts
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 
@@ -22,14 +23,17 @@ function fullName(
   return name || null;
 }
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const { id } = params;
+    const searchParams = request.nextUrl.searchParams;
 
-    // (Optional) quick UUID sanity check
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
+    // Optional UUID sanity check
     if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
       return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
     }
