@@ -25,16 +25,10 @@ function fullName(
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-
-    const id = searchParams.get('id');
+    const url = request.url.split('/');
+    const id = url[url.length - 1];
 
     if (!id) {
-      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
-    }
-
-    // Optional UUID sanity check
-    if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
       return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
     }
 
