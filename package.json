@@ -21,6 +21,7 @@
     "@tailwindcss/postcss": "^4.1.11",
     "@vercel/analytics": "^1.5.0",
     "clsx": "^2.1.1",
+    "docx": "^9.5.1",
     "next": "^15",
     "react": "^19",
     "react-calendly": "^4.4.0",

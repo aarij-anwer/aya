@@ -139,9 +139,15 @@ export default function ApplicationDetailClientPage() {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 flex items-center justify-between">
         <Link href="/" className="text-blue-600 underline">
           Back
+        </Link>
+        <Link
+          href={`/api/applications/${id}?format=docx`}
+          className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50"
+        >
+          Download Word
         </Link>
       </div>
     </main>
