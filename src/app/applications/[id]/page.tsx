@@ -71,7 +71,7 @@ export default function ApplicationDetailClientPage() {
       <main className="mx-auto max-w-3xl p-6">
         <h1 className="text-xl font-semibold">Missing id</h1>
         <div className="mt-6">
-          <Link href="/app" className="text-blue-600 underline">
+          <Link href="/" className="text-blue-600 underline">
             Back
           </Link>
         </div>
@@ -140,7 +140,7 @@ export default function ApplicationDetailClientPage() {
       </div>
 
       <div className="mt-6">
-        <Link href="/app" className="text-blue-600 underline">
+        <Link href="/" className="text-blue-600 underline">
           Back
         </Link>
       </div>
