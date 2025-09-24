@@ -12,6 +12,7 @@
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
+    "@faker-js/faker": "^10.0.0",
     "@headlessui/react": "^2.2.6",
     "@heroicons/react": "^2.2.0",
     "@neondatabase/serverless": "^1.0.1",

@@ -1,3 +1,4 @@
+import BasicMortgageForm from '@/components/BasicMortgageForm';
 import MortgageForm from '@/components/Form/MortgageForm';
 
 export default function Home() {
@@ -11,7 +12,8 @@ export default function Home() {
         {/* <Pricing /> */}
         {/* <Testimonials /> */}
         {/* <MortgageApplicationForm /> */}
-        <MortgageForm />
+        {/* <MortgageForm /> */}
+        <BasicMortgageForm />
       </main>
       {/* <Footer /> */}
     </>
