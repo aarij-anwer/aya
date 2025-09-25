@@ -246,3 +246,64 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    // --- Extract id from URL ---
+    const url = new URL(req.url);
+    const parts = url.pathname.split('/').filter(Boolean);
+    const id = parts[parts.length - 1];
+
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
+    // --- Parse body ---
+    const contentType = req.headers.get('content-type') ?? '';
+    let body: any = {};
+    if (contentType.includes('application/json')) {
+      body = await req.json();
+    } else if (
+      contentType.includes('application/x-www-form-urlencoded') ||
+      contentType.includes('multipart/form-data')
+    ) {
+      const fd = await req.formData();
+      fd.forEach((v, k) => {
+        body[k] = v;
+      });
+    }
+
+    const newStatus = body?.status;
+    if (typeof newStatus !== 'string' || !newStatus.trim()) {
+      return NextResponse.json(
+        { error: 'Missing or invalid status' },
+        { status: 400 }
+      );
+    }
+
+    // --- Update row ---
+    const rows = await sql /*sql*/ `
+      UPDATE applications
+      SET status = ${newStatus}
+      WHERE id = ${id}
+      RETURNING id, status, created_at
+    `;
+
+    if (!rows.length) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      id: rows[0].id,
+      status: rows[0].status,
+      updated_at: rows[0].created_at,
+    });
+  } catch (err: any) {
+    console.error('PATCH /applications/[id] failed:', err);
+    return NextResponse.json(
+      { error: 'Update failed', detail: String(err?.message ?? err) },
+      { status: 500 }
+    );
+  }
+}
