@@ -156,3 +156,11 @@ export function buildApplicantBlocks(
 
   return blocks;
 }
+
+export function getRandomFutureDate(daysAhead = 365) {
+  const today = new Date();
+  const randomDays = Math.floor(Math.random() * daysAhead) + 1; // 1 to daysAhead
+  const futureDate = new Date(today);
+  futureDate.setDate(today.getDate() + randomDays);
+  return futureDate.toISOString().split('T')[0]; // YYYY-MM-DD
+}

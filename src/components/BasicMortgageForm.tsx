@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 
 import { faker } from '@faker-js/faker';
 import { useRouter } from 'next/navigation';
+import { getRandomFutureDate } from '@/app/utils';
 
 function makeFixture() {
   const first = faker.person.firstName();
@@ -15,6 +16,21 @@ function makeFixture() {
   const city = faker.location.city();
   const prov = 'ON';
   const postal = 'M5V 2T6';
+
+  const purhcasestreet = `${faker.location.streetAddress()}`;
+  const purhcasecity = faker.location.city();
+  const purhcaseprov = 'ON';
+  const purhcasepostal = 'M5V 2T6';
+
+  const referencefirst = faker.person.firstName();
+  const referencelast = faker.person.lastName();
+  const referencestreet = `${faker.location.streetAddress()}`;
+  const referencecity = faker.location.city();
+  const referenceprov = 'ON';
+  const referencepostal = 'M5V 2T6';
+
+  const closingDate = getRandomFutureDate().toString();
+  console.log(closingDate);
 
   return {
     // UI toggles (new)
@@ -59,21 +75,24 @@ function makeFixture() {
     'fin-purchase-price': Math.floor(Math.random() * 1000000),
     'fin-down-payment': Math.floor(Math.random() * 100000),
     'fin-finance-amount': 680000,
-    'fin-closing-date': '2025-10-15',
-    'fin-property-address': '2200 South Sheridan',
-    'fin-property-city': 'Mississauga',
-    'fin-property-province': 'ON',
-    'fin-property-postal-code': 'I5S 2M4',
+    'fin-closing-date': closingDate,
+    'fin-property-address': purhcasestreet,
+    'fin-property-city': purhcasecity,
+    'fin-property-province': purhcaseprov,
+    'fin-property-postal-code': purhcasepostal,
 
     // Personal Reference
-    'ref-name': 'Jamie Rivera',
+    'ref-name': referencefirst + ' ' + referencelast,
     'ref-relationship': 'Friend',
     'ref-phone': '647-555-0199',
-    'ref-email': 'jamie@example.com',
-    'ref-street': '55 Queen St E',
-    'ref-city': 'Toronto',
-    'ref-province': 'ON',
-    'ref-postal': 'M5C 1R6',
+    'ref-email': faker.internet.email({
+      firstName: referencefirst,
+      lastName: referencelast,
+    }),
+    'ref-street': referencestreet,
+    'ref-city': referencecity,
+    'ref-province': referenceprov,
+    'ref-postal': referencepostal,
 
     // Co-Applicant — Identity & Employment
     'co-first': coFirst,
@@ -114,7 +133,7 @@ function makeFixture() {
     'asset-invest-type-1': 'TFSA',
     'asset-invest-amount-1': 25000,
     'asset-re-type-1': 'Condo',
-    'asset-re-value-1': 650000,
+    'asset-re-value-1': Math.floor(Math.random() * 1000000),
     'asset-vehicle-status-1': 'Owned',
     'asset-vehicle-value-1': 18000,
     'asset-other-desc-1': 'Jewelry',
@@ -128,7 +147,7 @@ function makeFixture() {
     'debt-loan-balance-1': 8000,
     'debt-loan-pay-1': 200,
     'debt-mortgage-desc-1': 'Primary residence',
-    'debt-mortgage-balance-1': 420000,
+    'debt-mortgage-balance-1': Math.floor(Math.random() * 1000000),
     'debt-mortgage-pay-1': 2200,
     'debt-other-desc-1': '',
     'debt-other-balance-1': 0,
@@ -780,7 +799,6 @@ export default function BasicMortgageForm() {
               </label>
               <input
                 id="fin-property-address"
-                placeholder="2200 South Sheridan"
                 {...register('fin-property-address')}
                 className={input}
               />
@@ -792,7 +810,6 @@ export default function BasicMortgageForm() {
               </label>
               <input
                 id="fin-property-city"
-                placeholder="Mississauga"
                 {...register('fin-property-city')}
                 className={input}
               />
@@ -804,7 +821,6 @@ export default function BasicMortgageForm() {
               </label>
               <input
                 id="fin-property-province"
-                placeholder="ON"
                 {...register('fin-property-province')}
                 className={input}
               />
@@ -816,7 +832,6 @@ export default function BasicMortgageForm() {
               </label>
               <input
                 id="fin-property-postal-code"
-                placeholder="I5S 2M4"
                 {...register('fin-property-postal-code')}
                 className={input}
               />
