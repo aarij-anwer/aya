@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { Analytics } from '@vercel/analytics/next';
 
 import '@/styles/tailwind.css';
+import ScrollToTop from '@/components/ScrollToTop';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.qutoofacademy.com'),
@@ -41,6 +42,7 @@ export default function RootLayout({
     >
       <body className="flex h-full flex-col">
         {children}
+        <ScrollToTop threshold={300} />
         <Analytics />
       </body>
     </html>
