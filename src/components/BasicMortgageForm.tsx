@@ -56,8 +56,8 @@ function makeFixture() {
     'emp-prev-tenure': 1,
 
     // Financing
-    'fin-purchase-price': 850000,
-    'fin-down-payment': 170000,
+    'fin-purchase-price': Math.floor(Math.random() * 1000000),
+    'fin-down-payment': Math.floor(Math.random() * 100000),
     'fin-finance-amount': 680000,
     'fin-closing-date': '2025-10-15',
     'fin-property-address': '2200 South Sheridan',
@@ -1413,7 +1413,7 @@ export default function BasicMortgageForm() {
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Liabilities
           </h2>
-          <div className={grid}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {/* Credit cards */}
             <div>
               <label htmlFor="debt-cc-desc-1" className={label}>
@@ -1427,17 +1427,6 @@ export default function BasicMortgageForm() {
               />
             </div>
             <div>
-              <label htmlFor="debt-cc-balance-1" className={label}>
-                Balance ($)
-              </label>
-              <input
-                id="debt-cc-balance-1"
-                type="number"
-                {...register('debt-cc-balance-1', { valueAsNumber: true })}
-                className={input}
-              />
-            </div>
-            <div>
               <label htmlFor="debt-cc-pay-1" className={label}>
                 Monthly payment ($)
               </label>
@@ -1445,6 +1434,17 @@ export default function BasicMortgageForm() {
                 id="debt-cc-pay-1"
                 type="number"
                 {...register('debt-cc-pay-1', { valueAsNumber: true })}
+                className={input}
+              />
+            </div>
+            <div>
+              <label htmlFor="debt-cc-balance-1" className={label}>
+                Balance ($)
+              </label>
+              <input
+                id="debt-cc-balance-1"
+                type="number"
+                {...register('debt-cc-balance-1', { valueAsNumber: true })}
                 className={input}
               />
             </div>
@@ -1462,17 +1462,6 @@ export default function BasicMortgageForm() {
               />
             </div>
             <div>
-              <label htmlFor="debt-loan-balance-1" className={label}>
-                Balance ($)
-              </label>
-              <input
-                id="debt-loan-balance-1"
-                type="number"
-                {...register('debt-loan-balance-1', { valueAsNumber: true })}
-                className={input}
-              />
-            </div>
-            <div>
               <label htmlFor="debt-loan-pay-1" className={label}>
                 Monthly payment ($)
               </label>
@@ -1480,6 +1469,17 @@ export default function BasicMortgageForm() {
                 id="debt-loan-pay-1"
                 type="number"
                 {...register('debt-loan-pay-1', { valueAsNumber: true })}
+                className={input}
+              />
+            </div>
+            <div>
+              <label htmlFor="debt-loan-balance-1" className={label}>
+                Balance ($)
+              </label>
+              <input
+                id="debt-loan-balance-1"
+                type="number"
+                {...register('debt-loan-balance-1', { valueAsNumber: true })}
                 className={input}
               />
             </div>
@@ -1497,6 +1497,17 @@ export default function BasicMortgageForm() {
               />
             </div>
             <div>
+              <label htmlFor="debt-mortgage-pay-1" className={label}>
+                Monthly payment ($)
+              </label>
+              <input
+                id="debt-mortgage-pay-1"
+                type="number"
+                {...register('debt-mortgage-pay-1', { valueAsNumber: true })}
+                className={input}
+              />
+            </div>
+            <div>
               <label htmlFor="debt-mortgage-balance-1" className={label}>
                 Balance ($)
               </label>
@@ -1509,17 +1520,6 @@ export default function BasicMortgageForm() {
                 className={input}
               />
             </div>
-            <div>
-              <label htmlFor="debt-mortgage-pay-1" className={label}>
-                Monthly payment ($)
-              </label>
-              <input
-                id="debt-mortgage-pay-1"
-                type="number"
-                {...register('debt-mortgage-pay-1', { valueAsNumber: true })}
-                className={input}
-              />
-            </div>
 
             {/* Other liabilities */}
             <div>
@@ -1529,6 +1529,17 @@ export default function BasicMortgageForm() {
               <input
                 id="debt-other-desc-1"
                 {...register('debt-other-desc-1')}
+                className={input}
+              />
+            </div>
+            <div>
+              <label htmlFor="debt-other-pay-1" className={label}>
+                Monthly payment ($)
+              </label>
+              <input
+                id="debt-other-pay-1"
+                type="number"
+                {...register('debt-other-pay-1', { valueAsNumber: true })}
                 className={input}
               />
             </div>
