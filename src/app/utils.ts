@@ -6,6 +6,8 @@ import {
   TableCell,
   WidthType,
   IParagraphOptions,
+  TabStopPosition,
+  TabStopType,
 } from 'docx';
 
 export const fmtMoney = (n?: number | null) =>
@@ -81,13 +83,13 @@ export function fullName(
 
 type ParaOpts = Omit<IParagraphOptions, 'children'>;
 
-export const P = (text: string | (string | TextRun)[], opts: ParaOpts = {}) => {
+export const P = (text: string | (string | TextRun)[], opts: any = {}) => {
   const children = Array.isArray(text)
     ? text.map((t) => (typeof t === 'string' ? new TextRun(t) : t))
     : [new TextRun(text)];
 
   return new Paragraph({
-    ...opts, // safe: opts is an object type
+    ...opts,
     children,
   });
 };
@@ -114,3 +116,43 @@ export const KV = (label: string, value: string) =>
       }),
     ],
   });
+
+export const signatureLine = (name: string) =>
+  P(['______________________________', '\t', name], {
+    tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+    spacing: { after: 120 },
+  });
+
+export function buildApplicantBlocks(
+  applicantName?: string,
+  coApplicantName?: string
+) {
+  const line = '______________________________   ';
+
+  const blocks: Paragraph[] = [
+    P(applicantName || 'Client 1', {
+      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+      spacing: { after: 120 },
+      children: [new TextRun(line), new TextRun(applicantName || 'Client 1')],
+    }),
+  ];
+
+  if (coApplicantName) {
+    blocks.push(
+      P(coApplicantName, {
+        tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+        spacing: { after: 120 },
+        children: [new TextRun(line), new TextRun(coApplicantName)],
+      })
+    );
+  }
+
+  blocks.push(
+    P('Signature', {
+      spacing: { before: 200, after: 100 },
+      children: [new TextRun(line), new TextRun('Signature')],
+    })
+  );
+
+  return blocks;
+}

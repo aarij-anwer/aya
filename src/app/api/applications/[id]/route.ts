@@ -5,15 +5,23 @@ import { neon } from '@neondatabase/serverless';
 import {
   Document,
   Packer,
-  Paragraph,
   TextRun,
-  HeadingLevel,
   Table,
-  TableRow,
-  TableCell,
   WidthType,
   AlignmentType,
+  TabStopPosition,
+  TabStopType,
 } from 'docx';
+import {
+  buildApplicantBlocks,
+  fmtDate,
+  fmtMoney,
+  fullName,
+  H2,
+  KV,
+  P,
+  parseFinancing,
+} from '@/app/utils';
 
 const sql = neon(process.env.DATABASE_URL as string);
 
@@ -27,134 +35,142 @@ type Row = {
   financing_details: string | null;
 };
 
-function fullName(
-  obj: Record<string, any> | null | undefined,
-  prefix: 'app' | 'co'
-) {
-  if (!obj) return null;
-  const first = obj[`${prefix}-first`];
-  const last = obj[`${prefix}-last`];
-  const name = [first, last].filter(Boolean).join(' ').trim();
-  return name || null;
-}
-
-function sectionTitle(text: string) {
-  return new Paragraph({
-    heading: HeadingLevel.HEADING_2,
-    spacing: { after: 120 },
-    children: [new TextRun({ text, bold: true })],
-  });
-}
-
-function kvTable(
-  raw: Record<string, any> | null | undefined,
-  labelMap?: Record<string, string>
-) {
-  const obj = raw ?? {};
-  const entries = Object.entries(obj);
-  if (!entries.length) return [new Paragraph('—')];
-
-  const rows = entries.map(([k, v]) => {
-    const key = labelMap?.[k] ?? k;
-    const val =
-      v === null || v === undefined
-        ? ''
-        : typeof v === 'object'
-          ? JSON.stringify(v)
-          : String(v);
-    return new TableRow({
-      children: [
-        new TableCell({
-          width: { size: 40, type: WidthType.PERCENTAGE },
-          children: [new Paragraph(String(key))],
-        }),
-        new TableCell({
-          width: { size: 60, type: WidthType.PERCENTAGE },
-          children: [new Paragraph(val)],
-        }),
-      ],
-    });
-  });
-
-  return [
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows,
-    }),
-  ];
-}
-
 async function buildDocx(row: Row) {
-  // Optional: prettify keys (add more as you wish)
-  const applicantMap: Record<string, string> = {
-    'app-first': 'First Name',
-    'app-last': 'Last Name',
-    'app-email': 'Email',
-    'app-phone': 'Phone',
-    'app-dob': 'Date of Birth',
-    'app-sin': 'SIN',
-    'app-street': 'Street',
-    'app-city': 'City',
-    'app-province': 'Province',
-    'app-postal': 'Postal Code',
-    'app-status': 'Status',
-  };
+  const fin = parseFinancing(row.financing_details);
 
-  const coMap: Record<string, string> = {
-    'co-first': 'First Name',
-    'co-last': 'Last Name',
-    'co-email': 'Email',
-    'co-phone': 'Phone',
-    'co-dob': 'Date of Birth',
-    'co-sin': 'SIN',
-    'co-street': 'Street',
-    'co-city': 'City',
-    'co-province': 'Province',
-    'co-postal': 'Postal Code',
-    'co-status': 'Status',
-  };
+  const appName = fullName(row.applicant, 'app') ?? '—';
+  const coName = fullName(row.co_applicant, 'co');
+  const partiesLine = coName ? `${appName} and ${coName}` : appName;
+
+  const applicantBlocks = buildApplicantBlocks(appName, coName ?? '');
+
+  const propertyLine = fin
+    ? [
+        fin.property_address,
+        [fin.property_city, fin.property_province].filter(Boolean).join(', '),
+        fin.property_postal_code,
+      ]
+        .filter(Boolean)
+        .join(', ')
+    : '—';
 
   const doc = new Document({
-    creator: 'Your App',
-    title: `Application ${row.id}`,
+    creator: 'AYA',
+    title: `Term Sheet – ${appName} - ${row.id}`,
     sections: [
       {
+        properties: {
+          page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } },
+        },
         children: [
-          new Paragraph({
+          P('MOYA FINANCIAL CREDIT UNION LIMITED', {
             alignment: AlignmentType.CENTER,
-            heading: HeadingLevel.TITLE,
-            spacing: { after: 200 },
-            children: [new TextRun(`Mortgage Application`)],
           }),
-          new Paragraph({
-            spacing: { after: 160 },
-            children: [
-              new TextRun({ text: `Application ID: ${row.id}`, bold: true }),
-              new TextRun({
-                text: row.status ? ` • Status: ${row.status}` : '',
-              }),
+          P('725 Browns Line, Etobicoke, ON M8W 3V7', {
+            alignment: AlignmentType.CENTER,
+          }),
+          P('Tel: 416.252.6527  Fax: 416.252.2092', {
+            alignment: AlignmentType.CENTER,
+          }),
+          P('', { spacing: { after: 200 } }),
+          P(`${fmtDate(row.created_at)}  (Via e-mail)`),
+          P(partiesLine, { spacing: { after: 100 } }),
+
+          // Subject
+          P(
+            [
+              new TextRun({ text: 'Re: ', bold: true }),
+              `Residential Mortgage – ${propertyLine}`,
+            ],
+            { spacing: { after: 200 } }
+          ),
+
+          // Opening
+          P(
+            'We are willing to proceed with a term financing application on the following basis. The term sheet outlined herein is intended to serve as a discussion paper only and is not a formal commitment.',
+            { spacing: { after: 200 } }
+          ),
+
+          // Parties
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              KV('Client', partiesLine),
+              KV('Financier', 'Moya Financial Credit Union Ltd. (“Moya”)'),
             ],
           }),
 
-          sectionTitle('Applicant'),
-          ...kvTable(row.applicant, applicantMap),
-
-          ...(row.co_applicant
-            ? [
-                sectionTitle('Co-Applicant'),
-                ...kvTable(row.co_applicant, coMap),
-              ]
-            : []),
-
-          new Paragraph({
-            spacing: { before: 300 },
-            children: [
-              new TextRun({
-                text: 'Note: This document may contain sensitive personal information. Handle and store securely.',
-                italics: true,
-              }),
+          H2('Facilities'),
+          P('First Position Residential Mortgage'),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              KV('Amount', fmtMoney(fin?.finance_amount ?? null)),
+              KV('Purchase Price', fmtMoney(fin?.purchase_price ?? null)),
+              KV('Down Payment', fmtMoney(fin?.down_payment ?? null)),
             ],
           }),
+
+          H2('Purpose'),
+          P(
+            `Purchase of an owner-occupied residential property located at ${propertyLine}.`
+          ),
+
+          H2('Closing Date'),
+          P(fin ? fmtDate(fin.closing_date) : '—'),
+
+          H2('Payment'),
+          P(
+            'In monthly installments as per an agreed-upon schedule sufficient to repay the facility in full during the specified amortization.'
+          ),
+
+          H2('Prepayment'),
+          P(
+            'a) On any regular payment date the client may increase up to double the required payment without penalty, not cumulative. Two-week notice required.'
+          ),
+          P(
+            'b) During the term the Client may prepay up to 20% of the then outstanding amount without bonus or penalty, with two-week notice; not within a consecutive 6-month period. Not cumulative year-over-year.'
+          ),
+          P(
+            'c) The Client may prepay the whole of the outstanding amount upon payment of an administrative fee (TBD).'
+          ),
+
+          H2('Term / Amortization'),
+          P('3-year term; twenty-five-year amortization.'),
+
+          H2('User Fee'),
+          P(
+            'In consideration for the Client utilizing the Facility and having quiet possession and exclusive use of the Real Property during the Term, the Client shall pay the Financier a user fee (rate subject to due diligence and cost evaluation).'
+          ),
+
+          H2('Fees'),
+          P(
+            'Application Fee: $1,000.00 ($250 payable upon acceptance of this term sheet and non-refundable; the balance deducted from proceeds on closing).'
+          ),
+
+          H2('Security'),
+          P(
+            `First-position mortgage on ${propertyLine} (full municipal address and legal description to be confirmed), plus customary assignments and insurance acknowledgements; all in form satisfactory to the Financier.`
+          ),
+
+          H2('Subject To'),
+          P(
+            'Receipt of appraisal (min. FTV requirements), income/NOA documents, proof of down payment, and any additional items required by the Financier.'
+          ),
+
+          H2('General Conditions / Covenants'),
+          P(
+            'Remain a member in good standing with Moya Financial Credit Union Limited while any portion of the facility remains outstanding or committed.'
+          ),
+
+          // Acceptance block
+          P('', { spacing: { before: 300 } }),
+          P(
+            'The above noted terms and conditions are acceptable to us. Please proceed with your formal application.'
+          ),
+          P('', { spacing: { after: 200 } }),
+          P('Accepted by:', { spacing: { after: 120 } }),
+          ...applicantBlocks,
         ],
       },
     ],
