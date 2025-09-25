@@ -364,3 +364,53 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+
+    // Optional pagination (defaults: limit=100, offset=0; hard cap limit=1000)
+    const limitRaw = Number(searchParams.get('limit') ?? '100');
+    const offsetRaw = Number(searchParams.get('offset') ?? '0');
+    const limit = Number.isFinite(limitRaw)
+      ? Math.min(Math.max(1, Math.trunc(limitRaw)), 1000)
+      : 100;
+    const offset = Number.isFinite(offsetRaw)
+      ? Math.max(0, Math.trunc(offsetRaw))
+      : 0;
+
+    const rows = await sql`
+      SELECT
+        id,
+        status,
+        applicant,
+        co_applicant,
+        reference,
+        declarations,
+        consent,
+        assets,
+        liabilities,
+        totals,
+        financing_details,
+        created_at,
+        updated_at
+      FROM applications
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    return NextResponse.json({
+      ok: true,
+      count: (rows as any[]).length ?? 0,
+      limit,
+      offset,
+      rows,
+    });
+  } catch (err: any) {
+    console.error('Select failed:', err);
+    return NextResponse.json(
+      { error: 'Select failed', detail: String(err?.message ?? err) },
+      { status: 500 }
+    );
+  }
+}
