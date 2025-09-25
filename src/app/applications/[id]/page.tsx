@@ -4,49 +4,90 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { fmtDate, fmtMoney } from '@/app/utils';
+
+type FinancingDetails = {
+  purchase_price?: number | null;
+  down_payment?: number | null;
+  finance_amount?: number | null;
+  closing_date?: string | null;
+  property_address?: string | null;
+  property_city?: string | null;
+  property_province?: string | null;
+  property_postal_code?: string | null;
+} | null;
 
 type ApiOk = {
   id: string;
   status: string | null;
   applicant_name: string | null;
   coapplicant_name: string | null;
+  created_at: string; // make sure API returns this
+  financing_details: Record<string, any> | null; // ← prefer object, not string
 };
+
 type ApiErr = { error: string; detail?: string };
 type ApiResponse = ApiOk | ApiErr;
 
 export default function ApplicationDetailClientPage() {
-  const params = useParams<{ id: string }>();
-  const id = params?.id;
+  const { id } = useParams<{ id: string }>();
 
   const [data, setData] = useState<ApiOk | null>(null);
   const [statusCode, setStatusCode] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // const apiUrl = useMemo(() => {
-  //   const base = process.env.NEXT_PUBLIC_SITE_URL;
-  //   const path = `/api/applications/${id}`;
-  //   return base ? `${base}${path}` : path;
-  // }, [id]);
+  // Derive financing object and address line from data
+  const { finObj, addressLines, addressMultiline } = useMemo(() => {
+    const raw = (data?.financing_details ?? null) as unknown;
+    const obj: FinancingDetails =
+      typeof raw === 'string'
+        ? (() => {
+            try {
+              return JSON.parse(raw) as FinancingDetails;
+            } catch {
+              return null;
+            }
+          })()
+        : (raw as FinancingDetails);
+
+    const lines = obj
+      ? [
+          obj.property_address,
+          [obj?.property_city, obj?.property_province]
+            .filter(Boolean)
+            .join(', '),
+          obj.property_postal_code?.toUpperCase(),
+        ].filter(Boolean)
+      : [];
+
+    return {
+      finObj: obj,
+      addressLines: lines,
+      addressMultiline: lines.join('\n'),
+    };
+  }, [data]);
 
   useEffect(() => {
     if (!id) return;
 
-    const apiUrl = `/api/applications/${id}`;
-
     const ctrl = new AbortController();
-    setLoading(true);
-    setErrorMsg(null);
-    setStatusCode(null);
+    const apiUrl = `/api/applications/${id}`;
 
     (async () => {
       try {
+        setLoading(true);
+        setErrorMsg(null);
+        setStatusCode(null);
+
         const res = await fetch(apiUrl, {
           cache: 'no-store',
           signal: ctrl.signal,
         });
         setStatusCode(res.status);
+
         const json = (await res.json()) as ApiResponse;
+
         if (!res.ok || 'error' in json) {
           setErrorMsg(('error' in json && json.error) || `HTTP ${res.status}`);
           setData(null);
@@ -103,7 +144,7 @@ export default function ApplicationDetailClientPage() {
         <p className="mt-2 text-sm text-gray-600">ID: {id}</p>
         {errorMsg && <p className="mt-2 text-sm text-red-600">{errorMsg}</p>}
         <div className="mt-6">
-          <Link href="/app" className="text-blue-600 underline">
+          <Link href="/" className="text-blue-600 underline">
             Back
           </Link>
         </div>
@@ -120,6 +161,7 @@ export default function ApplicationDetailClientPage() {
           <span className="text-sm text-gray-500">ID (last 4)</span>
           <span className="font-mono">{data.id.slice(-4)}</span>
         </div>
+
         <div className="flex justify-between gap-4">
           <span className="text-sm text-gray-500">Status</span>
           <span>
@@ -129,13 +171,52 @@ export default function ApplicationDetailClientPage() {
               : '—'}
           </span>
         </div>
+
         <div className="flex justify-between gap-4">
           <span className="text-sm text-gray-500">Applicant</span>
           <span>{data.applicant_name ?? '—'}</span>
         </div>
+
         <div className="flex justify-between gap-4">
           <span className="text-sm text-gray-500">Co-Applicant</span>
           <span>{data.coapplicant_name ?? '—'}</span>
+        </div>
+
+        <div className="flex justify-between gap-4">
+          <span className="text-sm text-gray-500">Date Submitted</span>
+          <span>
+            {new Intl.DateTimeFormat('en-CA', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+              timeZone: 'America/Toronto',
+            }).format(new Date(data.created_at))}
+          </span>
+        </div>
+
+        <div className="space-y-2 rounded-lg border p-4">
+          <h2>Financing Details</h2>
+          <div className="flex justify-between gap-4">
+            <span className="text-sm text-gray-500">Purchase Price</span>
+            <span>{fmtMoney(finObj?.purchase_price ?? null)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-sm text-gray-500">Down Payment</span>
+            <span>{fmtMoney(finObj?.down_payment ?? null)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-sm text-gray-500">Finance Amount</span>
+            <span>{fmtMoney(finObj?.finance_amount ?? null)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-sm text-gray-500">Closing Date</span>
+            <span>{fmtDate(finObj?.closing_date ?? null)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-sm text-gray-500">Property</span>
+            <span className="text-right whitespace-pre-line">
+              {addressMultiline || '—'}
+            </span>{' '}
+          </div>
         </div>
       </div>
 

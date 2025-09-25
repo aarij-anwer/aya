@@ -51,6 +51,16 @@ function makeFixture() {
     'emp-prev-position': 'Developer',
     'emp-prev-tenure': 1,
 
+    // Financing
+    'fin-purchase-price': 850000,
+    'fin-down-payment': 170000,
+    'fin-finance-amount': 680000,
+    'fin-closing-date': '2025-10-15',
+    'fin-property-address': '2200 South Sheridan',
+    'fin-property-city': 'Mississauga',
+    'fin-property-province': 'ON',
+    'fin-property-postal-code': 'I5S 2M4',
+
     // Personal Reference
     'ref-name': 'Jamie Rivera',
     'ref-relationship': 'Friend',
@@ -141,8 +151,17 @@ function makeFixture() {
 type FormValues = Record<string, any>;
 
 export default function BasicMortgageForm() {
-  const { register, handleSubmit, reset, getValues } = useForm<FormValues>();
+  const { register, handleSubmit, reset, getValues, watch } =
+    useForm<FormValues>();
   const router = useRouter();
+
+  const purchaseRaw = watch('fin-purchase-price');
+  const downRaw = watch('fin-down-payment');
+
+  const purchase = Number(purchaseRaw) || 0;
+  const down = Number(downRaw) || 0;
+  const finance = Math.max(purchase - down, 0); // never negative
+  const financeDisplay = finance ? String(finance) : ''; // empty when not computable
 
   const onSubmit = async () => {
     const values = getValues(); // RHF snapshot
@@ -537,6 +556,119 @@ export default function BasicMortgageForm() {
                 id="emp-prev-tenure"
                 type="number"
                 {...register('emp-prev-tenure')}
+                className={input}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Financing Details */}
+        <section className={section}>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Financing Details
+          </h2>
+          <div className={grid}>
+            <div>
+              <label htmlFor="fin-purchase-price" className={label}>
+                Purchase Price
+              </label>
+              <input
+                id="fin-purchase-price"
+                type="number"
+                inputMode="decimal"
+                {...register('fin-purchase-price')}
+                className={input}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="fin-down-payment" className={label}>
+                Down Payment
+              </label>
+              <input
+                id="fin-down-payment"
+                type="number"
+                inputMode="decimal"
+                {...register('fin-down-payment')}
+                className={input}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="fin-finance-amount" className={label}>
+                Finance Amount
+              </label>
+              <input
+                id="fin-finance-amount"
+                type="number"
+                inputMode="decimal"
+                className={input}
+                value={financeDisplay}
+                readOnly
+              />
+              <input
+                type="hidden"
+                {...register('fin-finance-amount', { valueAsNumber: true })}
+                value={finance}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="fin-closing-date" className={label}>
+                Closing Date
+              </label>
+              <input
+                id="fin-closing-date"
+                type="date"
+                {...register('fin-closing-date')}
+                className={input}
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="fin-property-address" className={label}>
+                Property Address
+              </label>
+              <input
+                id="fin-property-address"
+                placeholder="2200 South Sheridan"
+                {...register('fin-property-address')}
+                className={input}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="fin-property-city" className={label}>
+                Property City
+              </label>
+              <input
+                id="fin-property-city"
+                placeholder="Mississauga"
+                {...register('fin-property-city')}
+                className={input}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="fin-property-province" className={label}>
+                Property Province
+              </label>
+              <input
+                id="fin-property-province"
+                placeholder="ON"
+                {...register('fin-property-province')}
+                className={input}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="fin-property-postal-code" className={label}>
+                Property Postal Code
+              </label>
+              <input
+                id="fin-property-postal-code"
+                placeholder="I5S 2M4"
+                {...register('fin-property-postal-code')}
                 className={input}
               />
             </div>

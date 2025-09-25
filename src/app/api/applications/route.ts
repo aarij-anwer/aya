@@ -27,6 +27,8 @@ const prefixToColumn: Record<string, keyof RowShape> = {
   // Consent & signatures
   'sign-': 'consent',
   'consent-': 'consent',
+  // ← NEW: Financing details
+  'fin-': 'financing_details',
 };
 
 // Shape we’ll build to match your table columns
@@ -40,6 +42,7 @@ type RowShape = {
   assets?: Record<string, any> | null;
   liabilities?: Record<string, any> | null;
   totals?: Record<string, any> | null;
+  financing_details?: Record<string, any> | null;
 };
 
 // Minimal sanitizer: convert empty strings to null, keep numbers as strings for now.
@@ -60,6 +63,7 @@ function emptyBuckets(): RowShape {
     assets: null,
     liabilities: null,
     totals: null,
+    financing_details: null,
   };
 }
 
@@ -68,49 +72,116 @@ function ensureObj(val: Record<string, any> | null | undefined) {
 }
 
 // Assign a (key, value) pair into the right JSONB bucket using prefix rules.
+// function assignKV(buckets: RowShape, key: string, rawVal: any) {
+//   const val = normalizeValue(rawVal);
+
+//   // Find the longest matching prefix (so "co-emp-" wins over "co-")
+//   const match = Object.keys(prefixToColumn)
+//     .filter((p) => key.startsWith(p))
+//     .sort((a, b) => b.length - a.length)[0];
+
+//   if (!match) {
+//     // If no prefix matched, toss into applicant by default (or ignore)
+//     buckets.applicant[key] = val;
+//     return;
+//   }
+
+//   const column = prefixToColumn[match];
+
+//   if (column === 'applicant') {
+//     buckets.applicant[key] = val;
+//     return;
+//   }
+
+//   // For nullable JSONB columns, ensure object exists before writing
+//   if (column === 'co_applicant') {
+//     buckets.co_applicant = ensureObj(buckets.co_applicant);
+//     buckets.co_applicant![key] = val;
+//   } else if (column === 'reference') {
+//     buckets.reference = ensureObj(buckets.reference);
+//     buckets.reference![key] = val;
+//   } else if (column === 'declarations') {
+//     buckets.declarations = ensureObj(buckets.declarations);
+//     buckets.declarations![key] = val;
+//   } else if (column === 'consent') {
+//     buckets.consent = ensureObj(buckets.consent);
+//     buckets.consent![key] = val;
+//   } else if (column === 'assets') {
+//     buckets.assets = ensureObj(buckets.assets);
+//     buckets.assets![key] = val;
+//   } else if (column === 'liabilities') {
+//     buckets.liabilities = ensureObj(buckets.liabilities);
+//     buckets.liabilities![key] = val;
+//   } else if (column === 'totals') {
+//     buckets.totals = ensureObj(buckets.totals);
+//     buckets.totals![key] = val;
+//   }
+// }
+
 function assignKV(buckets: RowShape, key: string, rawVal: any) {
   const val = normalizeValue(rawVal);
-
-  // Find the longest matching prefix (so "co-emp-" wins over "co-")
   const match = Object.keys(prefixToColumn)
     .filter((p) => key.startsWith(p))
     .sort((a, b) => b.length - a.length)[0];
 
   if (!match) {
-    // If no prefix matched, toss into applicant by default (or ignore)
     buckets.applicant[key] = val;
     return;
   }
 
-  const column = prefixToColumn[match];
+  const column = prefixToColumn[match] as keyof RowShape;
 
   if (column === 'applicant') {
     buckets.applicant[key] = val;
     return;
   }
 
-  // For nullable JSONB columns, ensure object exists before writing
   if (column === 'co_applicant') {
     buckets.co_applicant = ensureObj(buckets.co_applicant);
     buckets.co_applicant![key] = val;
-  } else if (column === 'reference') {
+    return;
+  }
+
+  if (column === 'reference') {
     buckets.reference = ensureObj(buckets.reference);
     buckets.reference![key] = val;
-  } else if (column === 'declarations') {
+    return;
+  }
+
+  if (column === 'declarations') {
     buckets.declarations = ensureObj(buckets.declarations);
     buckets.declarations![key] = val;
-  } else if (column === 'consent') {
+    return;
+  }
+
+  if (column === 'consent') {
     buckets.consent = ensureObj(buckets.consent);
     buckets.consent![key] = val;
-  } else if (column === 'assets') {
+    return;
+  }
+
+  if (column === 'assets') {
     buckets.assets = ensureObj(buckets.assets);
     buckets.assets![key] = val;
-  } else if (column === 'liabilities') {
+    return;
+  }
+
+  if (column === 'liabilities') {
     buckets.liabilities = ensureObj(buckets.liabilities);
     buckets.liabilities![key] = val;
-  } else if (column === 'totals') {
+    return;
+  }
+
+  if (column === 'totals') {
     buckets.totals = ensureObj(buckets.totals);
     buckets.totals![key] = val;
+    return;
+  }
+
+  if (column === 'financing_details') {
+    buckets.financing_details = ensureObj(buckets.financing_details);
+    buckets.financing_details![key] = val;
+    return;
   }
 }
 
@@ -184,6 +255,48 @@ function compactConsent(consent: Record<string, any> | null | undefined) {
   });
 }
 
+// ← NEW: normalize and coerce financing_details
+function numOrNull(x: any): number | null {
+  const n = typeof x === 'number' ? x : Number(x);
+  return Number.isFinite(n) ? n : null;
+}
+function strOrNull(x: any): string | null {
+  if (x == null) return null;
+  const s = String(x).trim();
+  return s === '' ? null : s;
+}
+function compactFinancing(fin: Record<string, any> | null | undefined) {
+  if (!fin) return null;
+
+  const purchase_price = numOrNull(fin['fin-purchase-price']);
+  const down_payment = numOrNull(fin['fin-down-payment']);
+  // Recompute finance amount server-side for integrity
+  const computedFinance =
+    purchase_price != null && down_payment != null
+      ? Math.max(purchase_price - down_payment, 0)
+      : null;
+
+  const finance_amount =
+    computedFinance ?? numOrNull(fin['fin-finance-amount']);
+
+  const closing_date = strOrNull(fin['fin-closing-date']);
+  const property_address = strOrNull(fin['fin-property-address']);
+  const property_city = strOrNull(fin['fin-property-city']);
+  const property_province = strOrNull(fin['fin-property-province']);
+  const property_postal_code = strOrNull(fin['fin-property-postal-code']);
+
+  return pruneNulls({
+    purchase_price,
+    down_payment,
+    finance_amount,
+    closing_date,
+    property_address,
+    property_city,
+    property_province,
+    property_postal_code,
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const contentType = req.headers.get('content-type') || '';
@@ -215,11 +328,12 @@ export async function POST(req: Request) {
     }
 
     row.consent = compactConsent(row.consent);
+    row.financing_details = compactFinancing(row.financing_details);
 
     // Insert
     const inserted = (await sql`
   INSERT INTO applications
-    (status, applicant, co_applicant, reference, declarations, consent, assets, liabilities, totals)
+    (status, applicant, co_applicant, reference, declarations, consent, assets, liabilities, totals, financing_details)
   VALUES
     (
       ${'submitted'},
@@ -230,7 +344,8 @@ export async function POST(req: Request) {
       ${row.consent},
       ${row.assets},
       ${row.liabilities},
-      ${row.totals}
+      ${row.totals},
+      ${row.financing_details}
     )
   RETURNING id, created_at
 `) as { id: string; created_at: string }[];

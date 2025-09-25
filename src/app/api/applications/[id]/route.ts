@@ -23,6 +23,8 @@ type Row = {
   // Neon can return JSON columns already parsed; keep as Record<...>
   applicant: Record<string, any>;
   co_applicant: Record<string, any> | null;
+  created_at: string;
+  financing_details: string | null;
 };
 
 function fullName(
@@ -181,7 +183,7 @@ export async function GET(request: NextRequest) {
     }
 
     const rows = (await sql`
-      SELECT id, status, applicant, co_applicant
+      SELECT id, status, applicant, co_applicant, created_at, financing_details
       FROM applications
       WHERE id = ${id}
       LIMIT 1
@@ -217,6 +219,8 @@ export async function GET(request: NextRequest) {
       co_applicant: row.co_applicant,
       applicant_name: fullName(row.applicant, 'app'),
       coapplicant_name: fullName(row.co_applicant, 'co'),
+      created_at: row.created_at,
+      financing_details: row.financing_details ?? null,
     });
   } catch (err: any) {
     console.error('GET /applications/[id] failed:', err);
