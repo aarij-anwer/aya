@@ -203,7 +203,7 @@ export default function BasicMortgageForm() {
         </h1>
 
         {/* Applicant — Identity & Contact */}
-        <section className={section}>
+        <section className={section} id="applicant">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Applicant — Identity & Contact
           </h2>
@@ -563,7 +563,7 @@ export default function BasicMortgageForm() {
         </section>
 
         {/* Financing Details */}
-        <section className={section}>
+        <section className={section} id="financing">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Financing Details
           </h2>
@@ -767,7 +767,7 @@ export default function BasicMortgageForm() {
         </section>
 
         {/* Co-Applicant — Identity & Contact */}
-        <section className={section}>
+        <section className={section} id="#co-applicant">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Co-Applicant — Identity & Contact
           </h2>
@@ -1106,7 +1106,7 @@ export default function BasicMortgageForm() {
         </section>
 
         {/* Assets */}
-        <section className={section}>
+        <section className={section} id="assets">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Assets
           </h2>
@@ -1425,7 +1425,7 @@ export default function BasicMortgageForm() {
         </section>
 
         {/* Declarations */}
-        <section className={section}>
+        <section className={section} id="declarations">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Declarations
           </h2>

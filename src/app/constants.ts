@@ -2,25 +2,25 @@ import { NavProps } from '@/components/Nav';
 
 export const NAV: NavProps[] = [
   {
-    href: '/#about',
-    children: 'About',
+    href: '/#applicant',
+    children: 'Applicant',
   },
   {
-    href: '/#instructors',
-    children: 'Instructors',
+    href: '/#financing',
+    children: 'Financing Details',
   },
   {
-    href: '/#pricing',
-    children: 'Pricing',
+    href: '/#co-applicant',
+    children: 'Co-Applicant',
   },
   {
-    href: '/free',
-    children: 'Free Class',
+    href: '/#assets',
+    children: 'Assets',
   },
-  // {
-  //   href: '/#pricing',
-  //   children: 'Pricing',
-  // },
+  {
+    href: '/#declarations',
+    children: 'Declarations and Submit',
+  },
 ];
 
 export const PEOPLE = [
